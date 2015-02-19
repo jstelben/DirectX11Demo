@@ -46,7 +46,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	{
 		return false;
 	}
-	result = Model->Initialize(D3D->GetDevice(), "../Cube.txt", L"../sand.dds");
+	result = Model->Initialize(D3D->GetDevice(), "../basemodel.obj", L"../basemodelTexture.dds");
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could now initialize model object", L"Error", MB_OK);

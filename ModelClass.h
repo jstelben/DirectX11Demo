@@ -37,6 +37,21 @@ struct ModelType
 	float nz;
 };
 
+struct Face
+{
+	int vertexIndex1;
+	int vertexIndex2;
+	int vertexIndex3;
+
+	int texIndex1;
+	int texIndex2;
+	int texIndex3;
+
+	int normalIndex1;
+	int normalIndex2;
+	int normalIndex3;
+};
+
 class ModelClass
 {
 public:

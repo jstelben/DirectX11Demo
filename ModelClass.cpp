@@ -51,7 +51,7 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFileName, WCHAR* te
 {
 	bool result;
 
-	result = LoadModel(modelFileName);
+	result = LoadBlenderModel(modelFileName);
 	if(!result)
 	{
 		return false;
@@ -284,7 +284,19 @@ bool ModelClass::LoadModel(char* fileName)
 bool ModelClass::LoadBlenderModel(char* fileName)
 {
 	std::ifstream stream;
-	char* input;
+	char input;
+	int vertexCount = 0;
+	int texCoordCount = 0;
+	int normalCount = 0;
+	int faceCount = 0;
+	int vertexIndex = 0;
+	int textureIndex = 0;
+	int normalIndex = 0;
+	int faceIndex = 0;
+	D3DXVECTOR3* vertices;
+	D3DXVECTOR2* texCoords;
+	D3DXVECTOR3* normals;
+	Face* faces;
 
 	stream.open(fileName);
 	if(stream.fail())
@@ -292,11 +304,159 @@ bool ModelClass::LoadBlenderModel(char* fileName)
 		return false;
 	}
 
+	stream.get(input);
 	while(!stream.eof())
 	{
-		
+		if(input == 'v')
+		{
+			stream.get(input);
+			if(input == ' ') { vertexCount++;}
+			else if (input == 't') { texCoordCount++;}
+			else if (input == 'n') { normalCount++;}
+		}
+		else if(input == 'f')
+		{
+			stream.get(input);
+			if(input == ' ') { faceCount++;}
+		}
+
+		while(input != '\n')
+		{
+			stream.get(input);
+		}
+		stream.get(input);
 	}
 
+	stream.close();
+
+	vertices = new D3DXVECTOR3[vertexCount];
+	texCoords = new D3DXVECTOR2[texCoordCount];
+	normals = new D3DXVECTOR3[normalCount];
+	faces = new Face[faceCount];
+
+	stream.open(fileName);
+	if(stream.fail())
+	{
+		return false;
+	}
+
+	stream.get(input);
+	while(!stream.eof())
+	{
+		if(input == 'v')
+		{
+			stream.get(input);
+
+			if(input == ' ')
+			{
+				//May need to convert here for left hand system.
+				stream >> vertices[vertexIndex].x >> vertices[vertexIndex].y >> vertices[vertexIndex].z;
+				vertices[vertexIndex].z *= -1.0f;
+				vertexIndex++;
+			}
+			else if(input == 't')
+			{
+				stream >> texCoords[textureIndex].x >> texCoords[textureIndex].y;
+				texCoords[textureIndex].y = 1.0f - texCoords[textureIndex].y;
+				textureIndex++;
+			}
+			else if(input == 'n')
+			{
+				stream >> normals[normalIndex].x >> normals[normalIndex].y >> normals[normalIndex].z;
+				normals[normalIndex].z *= -1.0f;
+				normalIndex++;
+			}
+		}
+		else if(input == 'f')
+		{
+			stream.get(input);
+			if(input == ' ')
+			{
+				char buffer;
+				stream >> faces[faceIndex].vertexIndex3 >> buffer >> faces[faceIndex].texIndex3 >> buffer >> faces[faceIndex].normalIndex3
+					   >> faces[faceIndex].vertexIndex2 >> buffer >> faces[faceIndex].texIndex2 >> buffer >> faces[faceIndex].normalIndex2
+					   >> faces[faceIndex].vertexIndex1 >> buffer >> faces[faceIndex].texIndex1 >> buffer >> faces[faceIndex].normalIndex1;
+				faceIndex++;
+			}
+		}
+		while(input != '\n')
+		{
+			stream.get(input);
+		}
+		stream.get(input);
+	}
+
+	stream.close();
+
+	//each face has 3 indices
+	IndexCount = faceCount * 3;
+	VertexCount = IndexCount;
+	Model = new ModelType[IndexCount];
+	if(!Model)
+	{
+		return false;
+	}
+
+	for(int i = 0; i < faceCount; i++)
+	{
+		int index = i * 3;
+		int vertexIndex = faces[i].vertexIndex1 - 1;
+		int texCoordIndex = faces[i].texIndex1 - 1;
+		int normalIndex = faces[i].normalIndex1 - 1;
+		Model[index].x = vertices[vertexIndex].x;
+		Model[index].y = vertices[vertexIndex].y;
+		Model[index].z = vertices[vertexIndex].z;
+		Model[index].tu = texCoords[texCoordIndex].x;
+		Model[index].tv = texCoords[texCoordIndex].y;
+		Model[index].nx = normals[normalIndex].x;
+		Model[index].ny = normals[normalIndex].y;
+		Model[index].nz = normals[normalIndex].z;
+		index++;
+		vertexIndex = faces[i].vertexIndex2 - 1;
+		texCoordIndex = faces[i].texIndex2 - 1;
+		normalIndex = faces[i].normalIndex2 - 1;
+		Model[index].x = vertices[vertexIndex].x;
+		Model[index].y = vertices[vertexIndex].y;
+		Model[index].z = vertices[vertexIndex].z;
+		Model[index].tu = texCoords[texCoordIndex].x;
+		Model[index].tv = texCoords[texCoordIndex].y;
+		Model[index].nx = normals[normalIndex].x;
+		Model[index].ny = normals[normalIndex].y;
+		Model[index].nz = normals[normalIndex].z;
+		index++;
+		vertexIndex = faces[i].vertexIndex3 - 1;
+		texCoordIndex = faces[i].texIndex3 - 1;
+		normalIndex = faces[i].normalIndex3 - 1;
+		Model[index].x = vertices[vertexIndex].x;
+		Model[index].y = vertices[vertexIndex].y;
+		Model[index].z = vertices[vertexIndex].z;
+		Model[index].tu = texCoords[texCoordIndex].x;
+		Model[index].tv = texCoords[texCoordIndex].y;
+		Model[index].nx = normals[normalIndex].x;
+		Model[index].ny = normals[normalIndex].y;
+		Model[index].nz = normals[normalIndex].z;
+	}
+	if(vertices)
+	{
+		delete[] vertices;
+		vertices = nullptr;
+	}
+	if(texCoords)
+	{
+		delete[] texCoords;
+		texCoords = nullptr;
+	}
+	if(normals)
+	{
+		delete[] normals;
+		normals = nullptr;
+	}
+	if(faces)
+	{
+		delete[] faces;
+		faces = nullptr;
+	}
+	return true;
 }
 
 void ModelClass::ReleaseModel()
