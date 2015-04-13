@@ -29,6 +29,10 @@ public:
 	void GetOrthoMatrix(D3DXMATRIX&);
 
 	void GetVideoCardInfo(char*, int&);
+	void TurnZBufferOn();
+	void TurnZBufferOff();
+	void TurnOnAlphaBlending();
+	void TurnOffAlphaBlending();
 
 private:
 	bool VSyncEnabled;
@@ -45,5 +49,8 @@ private:
 	D3DXMATRIX ProjectionMatrix;
 	D3DXMATRIX WorldMatrix;
 	D3DXMATRIX OrthoMatrix;
+	ID3D11DepthStencilState* DepthDisableStencilState;
+	ID3D11BlendState* AlphaEnabledBlendingState;
+	ID3D11BlendState* AlphaDisableBlendingState;
 };
 

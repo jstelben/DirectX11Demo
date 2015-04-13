@@ -20,6 +20,7 @@ GraphicsClass::~GraphicsClass(void)
 bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
+	D3DXMATRIX baseViewMatrix;
 
 	D3D = new D3DClass();
 	if(!D3D)
@@ -39,7 +40,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	{
 		return false;
 	}
-	Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	Camera->SetPosition(0.0f, -2.0f, -10.0f);
+	Camera->Render();
+	Camera->GetViewMatrix(baseViewMatrix);
 
 	Model = new ModelClass();
 	if(!Model)
@@ -73,11 +76,29 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	Light->SetDirection(0.0f, 0.0f, 1.0f);
 
+	Text = new TextClass();
+	if(!Text)
+	{
+		return false;
+	}
+	result = Text->Initialize(D3D->GetDevice(), D3D->GetDeviceContext(), hwnd, screenWidth, screenHeight, baseViewMatrix);
+	if(!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the text object.", L"Error", MB_OK);
+		return false;
+	}
+
 	return true;
 }
 
 void GraphicsClass::Shutdown()
 {
+	if(Text)
+	{
+		Text->Shutdown();
+		delete Text;
+		Text = nullptr;
+	}
 	if(Light)
 	{
 		delete Light;
@@ -123,8 +144,21 @@ void GraphicsClass::Shutdown()
 	}
 }
 
-bool GraphicsClass::Frame()
+bool GraphicsClass::Frame(int fps, int cpu, float frameTime)
 {
+	bool result;
+	result = Text->SetFps(fps, D3D->GetDeviceContext());
+	if(!result)
+	{
+		return false;
+	}
+
+	result = Text->SetCpu(cpu, D3D->GetDeviceContext());
+	if(!result)
+	{
+		return false;
+	}
+
 	static float rotation = 0.0f;
 
 	rotation += (float)D3DX_PI * 0.01f;
@@ -132,12 +166,11 @@ bool GraphicsClass::Frame()
 	{
 		rotation -= 360.0f;
 	}
-	bool result;
 
 	result = Render(rotation);
 	if(!result)
 	{
-		return result;
+		return false;
 	}
 	Sleep(50);
 	return true;
@@ -148,6 +181,7 @@ bool GraphicsClass::Render()
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;
 	D3DXMATRIX worldMatrix;
+	D3DXMATRIX orthoMatrix;
 	bool result;
 
 	D3D->BeginScene(0.4f, 0.611f, 0.94f, 1.0f);
@@ -157,7 +191,19 @@ bool GraphicsClass::Render()
 	Camera->GetViewMatrix(viewMatrix);
 	D3D->GetWorldMatrix(worldMatrix);
 	D3D->GetProjectionMatrix(projectionMatrix);
+	D3D->GetOrthoMatrix(orthoMatrix);
 
+	D3D->TurnZBufferOff();
+	D3D->TurnOnAlphaBlending();
+	result = Text->Render(D3D->GetDeviceContext(), worldMatrix, orthoMatrix);
+	if(!result)
+	{
+		return false;
+	}
+
+	D3D->TurnOffAlphaBlending();
+	
+	D3D->TurnZBufferOn();
 	Model->Render(D3D->GetDeviceContext());
 
 	result = LightShader->Render(D3D->GetDeviceContext(),
@@ -177,6 +223,7 @@ bool GraphicsClass::Render(float rotation)
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;
 	D3DXMATRIX worldMatrix;
+	D3DXMATRIX orthoMatrix;
 	bool result;
 
 	D3D->BeginScene(0.4f, 0.611f, 0.94f, 1.0f);
@@ -186,6 +233,20 @@ bool GraphicsClass::Render(float rotation)
 	Camera->GetViewMatrix(viewMatrix);
 	D3D->GetWorldMatrix(worldMatrix);
 	D3D->GetProjectionMatrix(projectionMatrix);
+	D3D->GetOrthoMatrix(orthoMatrix);
+
+	D3D->TurnZBufferOff();
+	D3D->TurnOnAlphaBlending();
+	result = Text->Render(D3D->GetDeviceContext(), worldMatrix, orthoMatrix);
+	if(!result)
+	{
+		return false;
+	}
+
+	D3D->TurnOffAlphaBlending();
+	
+	D3D->TurnZBufferOn();
+
 	D3DXMatrixRotationY(&worldMatrix, rotation);
 
 	Model->Render(D3D->GetDeviceContext());
@@ -193,6 +254,11 @@ bool GraphicsClass::Render(float rotation)
 	result = LightShader->Render(D3D->GetDeviceContext(),
 		Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 		Model->GetTexture(), Light->GetDirection(), Light->GetDiffuseColor());
+	if(!result)
+	{
+		return false;
+	}
+
 	if(!result)
 	{
 		return false;

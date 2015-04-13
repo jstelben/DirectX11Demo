@@ -5,6 +5,9 @@ SystemClass::SystemClass(void)
 {
 	Input = nullptr;
 	Graphics = nullptr;
+	Fps = nullptr;
+	Cpu = nullptr;
+	Timer = nullptr;
 }
 
 SystemClass::SystemClass(const SystemClass& other)
@@ -41,12 +44,58 @@ bool SystemClass::Initialize()
 	}
 
 	result = Graphics->Initialize(screenWidth, screenHeight, Hwnd);
+	if(!result)
+	{
+		return false;
+	}
 
+
+	Fps = new FpsClass();
+	if(!Fps)
+	{
+		return false;
+	}
+	Fps->Initialize();
+
+	Cpu = new CpuClass();
+	if(!Cpu)
+	{
+		return false;
+	}
+	Cpu->Initialize();
+
+	Timer = new TimerClass();
+	if(!Timer)
+	{
+		return Timer;
+	}
+	result = Timer->Initialize();
+	if(!result)
+	{
+		MessageBox(Hwnd, L"Could not initialize the Timer object.", L"Error", MB_OK);
+		return false;
+	}
 	return result;
 }
 
 void SystemClass::Shutdown()
 {
+	if(Timer)
+	{
+		delete Timer;
+		Timer = nullptr;
+	}
+	if(Cpu)
+	{
+		Cpu->Shutdown();
+		delete Cpu;
+		Cpu = nullptr;
+	}
+	if(Fps)
+	{
+		delete Fps;
+		Fps = nullptr;
+	}
 	if(Graphics)
 	{
 		Graphics->Shutdown();
@@ -98,12 +147,17 @@ bool SystemClass::Frame()
 {
 	bool result;
 
+	Fps->Frame();
+	Cpu->Frame();
+	Timer->Frame();
+
 	if(Input->IsKeyDown(VK_ESCAPE))
 	{
 		return false;
 	}
 
-	result = Graphics->Frame();
+
+	result = Graphics->Frame(Fps->GetFps(), Cpu->GetCpuPercentage(), Timer->GetTime());
 	if(!result)
 	{
 		return false;

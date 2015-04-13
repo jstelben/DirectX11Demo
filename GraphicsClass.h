@@ -8,6 +8,7 @@
 #include "TextureShaderClass.h"
 #include "LightShaderClass.h"
 #include "LightClass.h"
+#include "TextClass.h"
 
 static const bool FULL_SCREEN = false;
 static const bool VSYNC_ENABLED = false;
@@ -22,7 +23,7 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown(void);
-	bool Frame(void);
+	bool Frame(int, int, float);
 
 
 private:
@@ -36,4 +37,5 @@ private:
 	TextureShaderClass* TextureShader;
 	LightShaderClass* LightShader;
 	LightClass* Light;
+	TextClass* Text;
 };

@@ -5,6 +5,10 @@
 
 #include "InputClass.h"
 #include "GraphicsClass.h"
+#include "FpsClass.h"
+#include "CpuClass.h"
+#include "TimerClass.h"
+
 class SystemClass
 {
 public:
@@ -30,6 +34,9 @@ private:
 
 	InputClass* Input;
 	GraphicsClass* Graphics;
+	FpsClass* Fps;
+	CpuClass* Cpu;
+	TimerClass* Timer;
 };
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);

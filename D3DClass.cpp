@@ -38,6 +38,8 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync,
 	D3D11_RASTERIZER_DESC rasterDesc;
 	D3D11_VIEWPORT viewport;
 	float fieldOfView, screenAspect;
+	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+	D3D11_BLEND_DESC blendStateDescription;
 
 	VSyncEnabled = vsync;
 
@@ -320,11 +322,74 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync,
 
 	D3DXMatrixOrthoLH(&OrthoMatrix, (float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
+	ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
+	depthDisabledStencilDesc.DepthEnable = false;
+	depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDisabledStencilDesc.StencilEnable = true;
+	depthDisabledStencilDesc.StencilReadMask = 0xFF;
+	depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+	depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	result = Device->CreateDepthStencilState(&depthDisabledStencilDesc, &DepthDisableStencilState);
+	if(FAILED(result))
+	{
+		return false;
+	}
+
+	
+	ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
+	
+	blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+	result = Device->CreateBlendState(&blendStateDescription, &AlphaEnabledBlendingState);
+	if(FAILED(result))
+	{
+		return false;
+	}
+
+	blendStateDescription.RenderTarget[0].BlendEnable = false;
+	result = Device->CreateBlendState(&blendStateDescription, &AlphaDisableBlendingState);
+	if(FAILED(result))
+	{
+		return false;
+	}
+
+
 	return true;
 }
 
 void D3DClass::Shutdown()
 {
+	if(AlphaEnabledBlendingState)
+	{
+		AlphaEnabledBlendingState->Release();
+		AlphaEnabledBlendingState = nullptr;
+	}
+	if(AlphaDisableBlendingState)
+	{
+		AlphaDisableBlendingState->Release();
+		AlphaDisableBlendingState = nullptr;
+	}
+	if(DepthDisableStencilState)
+	{
+		DepthDisableStencilState->Release();
+		DepthDisableStencilState = nullptr;
+	}
 	if(SwapChain)
 	{
 		SwapChain->SetFullscreenState(false, NULL);
@@ -437,4 +502,34 @@ void D3DClass::GetVideoCardInfo(char* cardName, int& memory)
 {
 	strcpy_s(cardName, 128, VideoCardDescription);
 	memory = VideoCardMemory;
+}
+
+void D3DClass::TurnZBufferOn()
+{
+	DeviceContext->OMSetDepthStencilState(DepthStencilState, 1);
+}
+
+void D3DClass::TurnZBufferOff()
+{
+	DeviceContext->OMSetDepthStencilState(DepthDisableStencilState, 1);
+}
+
+void D3DClass::TurnOnAlphaBlending()
+{
+	float blendFactor[4];
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+	DeviceContext->OMSetBlendState(AlphaEnabledBlendingState, blendFactor, 0xffffffff);
+}
+
+void D3DClass::TurnOffAlphaBlending()
+{
+	float blendFactor[4];
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+	DeviceContext->OMSetBlendState(AlphaDisableBlendingState, blendFactor, 0xffffffff);
 }
