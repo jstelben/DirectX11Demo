@@ -75,6 +75,12 @@
     <ClInclude Include="TextClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LoggerClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Enums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SystemClass.cpp">
@@ -137,6 +143,12 @@
     <ClCompile Include="TextClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LoggerClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Enums.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">
@@ -169,5 +181,14 @@
     <FxCompile Include="FontVertexShader.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="log4cpp.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="log4cpp.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="log4cpp.properties" />
   </ItemGroup>
 </Project>

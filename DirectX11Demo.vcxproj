@@ -41,6 +41,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>C:\Tools\log4cpp\msvc10\log4cppLIB\Debug;C:\Users\John\Documents\GitHub\StelbenGameEngine\DirectX11Demo;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Tools\log4cpp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -80,6 +82,7 @@
     <ClInclude Include="ColorShaderClass.h" />
     <ClInclude Include="CpuClass.h" />
     <ClInclude Include="D3DClass.h" />
+    <ClInclude Include="Enums.h" />
     <ClInclude Include="FontClass.h" />
     <ClInclude Include="FontShaderClass.h" />
     <ClInclude Include="FpsClass.h" />
@@ -87,6 +90,7 @@
     <ClInclude Include="InputClass.h" />
     <ClInclude Include="LightClass.h" />
     <ClInclude Include="LightShaderClass.h" />
+    <ClInclude Include="LoggerClass.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ModelClass.h" />
     <ClInclude Include="ParticleShaderClass.h" />
@@ -102,6 +106,7 @@
     <ClCompile Include="ColorShaderClass.cpp" />
     <ClCompile Include="CpuClass.cpp" />
     <ClCompile Include="D3DClass.cpp" />
+    <ClCompile Include="Enums.cpp" />
     <ClCompile Include="FontClass.cpp" />
     <ClCompile Include="FontShaderClass.cpp" />
     <ClCompile Include="FpsClass.cpp" />
@@ -109,6 +114,7 @@
     <ClCompile Include="InputClass.cpp" />
     <ClCompile Include="LightClass.cpp" />
     <ClCompile Include="LightShaderClass.cpp" />
+    <ClCompile Include="LoggerClass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ModelClass.cpp" />
     <ClCompile Include="ParticleShaderClass.cpp" />
@@ -158,6 +164,15 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="log4cpp.dll" />
+    <Xml Include="log4cpp.properties">
+      <FileType>Document</FileType>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="log4cpp.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,6 +8,7 @@
 #include "FpsClass.h"
 #include "CpuClass.h"
 #include "TimerClass.h"
+#include "LoggerClass.h"
 
 class SystemClass
 {

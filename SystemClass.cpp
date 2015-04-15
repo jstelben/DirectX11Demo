@@ -22,6 +22,8 @@ SystemClass::~SystemClass(void)
 
 bool SystemClass::Initialize()
 {
+	LoggerClass::SetPriority(LoggerPriority::Debug);
+	LoggerClass::Log("Initializing System");
 	int screenWidth = 0;
 	int screenHeight = 0;
 	bool result;
