@@ -243,6 +243,10 @@ bool TextClass::UpdateSentence(SentenceType* sentence, char* text, int positionX
 
 void TextClass::ReleaseSentence(SentenceType** sentence)
 {
+	if(!sentence)
+	{
+		return;
+	}
 	if(*sentence)
 	{
 		if((*sentence)->vertexBuffer)
